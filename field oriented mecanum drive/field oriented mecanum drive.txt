@@ -1,0 +1,55 @@
+// VEX V5 C++ Project
+#include "vex.h"
+#include <algorithm>
+#include <cmath>
+using namespace vex;
+
+
+vex::motor back_right_motor( vex::PORT1, vex::gearSetting::ratio18_1, true );
+vex::motor back_left_motor( vex::PORT10, vex::gearSetting::ratio18_1, false );
+vex::motor front_right_motor( vex::PORT11, vex::gearSetting::ratio18_1, true );
+vex::motor front_left_motor( vex::PORT20, vex::gearSetting::ratio18_1, false );
+vex::controller con(vex::controllerType::primary);
+vex::inertial Inertial2(vex::PORT4);
+
+void usercontrol(void) {
+  // User control code here, inside the loop
+  while (1) {
+    while(true)
+    { 
+
+        double headingRadians = Inertial2.heading() * 3.14159/180;
+        double yPos = con.Axis3.position(pct);
+        double xPos = con.Axis4.position(pct);
+        double sineHeading = sin(headingRadians);
+        double cosHeading = cos(headingRadians);
+        double rotatedYPos = xPos * sineHeading + yPos * cosHeading;
+        double rotatedXPos = xPos * cosHeading - yPos * sineHeading;
+        double rotation = con.Axis1.position(pct);
+
+        BackLeft.spin( directionType::fwd, rotatedYPos - rotatedXPos + rotation, velocityUnits::pct );
+        FrontLeft.spin( directionType::fwd, rotatedYPos + rotatedXPos + rotation, velocityUnits::pct );
+        BackRight.spin( directionType::rev, - rotatedYPos - rotatedXPos - rotation, velocityUnits::pct );
+        FrontRight.spin( directionType::rev, - rotatedYPos + rotatedXPos - rotation, velocityUnits::pct );
+    }
+  }
+}
+
+
+int main() {
+  Competition.autonomous(autonomous);
+  Competition.drivercontrol(usercontrol);
+
+  // Run the pre-autonomous function.
+  pre_auton();
+
+  // so that main doesn't end
+  while (true) {
+    wait(50, msec);
+  }
+}
+
+void autonomous(void) {
+  // stuff
+}
+
