@@ -5,18 +5,27 @@
 using namespace vex;
 
 
-vex::motor back_right_motor( vex::PORT1, vex::gearSetting::ratio18_1, true );
-vex::motor back_left_motor( vex::PORT10, vex::gearSetting::ratio18_1, false );
-vex::motor front_right_motor( vex::PORT11, vex::gearSetting::ratio18_1, true );
-vex::motor front_left_motor( vex::PORT20, vex::gearSetting::ratio18_1, false );
+vex::motor back_right_motor( vex::PORT1, vex::gearSetting::ratio18_1, false );
+vex::motor back_left_motor( vex::PORT3, vex::gearSetting::ratio18_1, true );
+vex::motor front_right_motor( vex::PORT2, vex::gearSetting::ratio18_1, false );
+vex::motor front_left_motor( vex::PORT4, vex::gearSetting::ratio18_1, true );
 vex::controller con(vex::controllerType::primary);
-vex::inertial Inertial2(vex::PORT4);
+vex::inertial Inertial2(vex::PORT5);
 
 void usercontrol(void) {
   // User control code here, inside the loop
+  Inertial2.setHeading(0.0, degrees);
+    Inertial2.setRotation(0.0, degrees);
+    Inertial2.startCalibration();
+    while (Inertial2.isCalibrating()) { 
+        task::sleep(10); 
+    }
+    Inertial2.setHeading(0.0, degrees);
+    Inertial2.setRotation(0.0, degrees);
   while (1) {
     while(true)
     { 
+
 
         double headingRadians = Inertial2.heading() * 3.14159/180;
         double yPos = con.Axis3.position(pct);
@@ -27,29 +36,29 @@ void usercontrol(void) {
         double rotatedXPos = xPos * cosHeading - yPos * sineHeading;
         double rotation = con.Axis1.position(pct);
 
-        BackLeft.spin( directionType::fwd, rotatedYPos - rotatedXPos + rotation, velocityUnits::pct );
-        FrontLeft.spin( directionType::fwd, rotatedYPos + rotatedXPos + rotation, velocityUnits::pct );
-        BackRight.spin( directionType::rev, - rotatedYPos - rotatedXPos - rotation, velocityUnits::pct );
-        FrontRight.spin( directionType::rev, - rotatedYPos + rotatedXPos - rotation, velocityUnits::pct );
+        back_left_motor.spin( directionType::fwd, rotatedYPos - rotatedXPos + rotation, velocityUnits::pct );
+        front_left_motor.spin( directionType::fwd, rotatedYPos + rotatedXPos + rotation, velocityUnits::pct );
+        back_right_motor.spin( directionType::rev, - rotatedYPos - rotatedXPos + rotation, velocityUnits::pct );
+        front_right_motor.spin( directionType::rev, - rotatedYPos + rotatedXPos + rotation, velocityUnits::pct );
     }
   }
 }
+void preAuton(void)
+{
+  wait(1, seconds);
+}
 
+void auton(void)
+{
+ 
+}
 
 int main() {
-  Competition.autonomous(autonomous);
-  Competition.drivercontrol(usercontrol);
+  competition comp;
 
-  // Run the pre-autonomous function.
-  pre_auton();
+  comp.autonomous(auton);
+  comp.drivercontrol(usercontrol);
 
-  // so that main doesn't end
-  while (true) {
-    wait(50, msec);
-  }
+  preAuton();
+  return 0;
 }
-
-void autonomous(void) {
-  // stuff
-}
-
