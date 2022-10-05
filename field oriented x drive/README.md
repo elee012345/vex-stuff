@@ -17,3 +17,5 @@ go forward compared to itself, which is right compared to the field. This works 
 
 A faster way to rotate the joystick coordinates was found on this website: https://danceswithcode.net/engineeringnotes/rotations_in_2d/rotations_in_2d.html
 This decreases lag and increases performance.
+
+I used the code here: https://github.com/elee012345/vex-spin-up
